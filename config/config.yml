@@ -1,0 +1,13 @@
+data_dir:
+  crema_d: /project/shrikann_35/tiantiaf/ser-data/CREMA-D/
+  iemocap: /project/shrikann_35/tiantiaf/ser-data/iemocap/
+  meld: /project/shrikann_35/tiantiaf/ser-data/MELD.Raw/
+  msp-improv: /project/shrikann_35/tiantiaf/ser-data/MSP-IMPROV/
+  msp-podcast: /project/shrikann_35/tiantiaf/ser-data/MSP-podcast
+  ravdess: /project/shrikann_35/tiantiaf/ser-data/Ravdess
+  slurp: /scratch1/tiantiaf/slurp/
+  syn_slu: /scratch1/tiantiaf/robust-slu/audio/syn_slu/flan-t5-xxl
+  syn_ser_4000: /scratch1/tiantiaf/robust-slu/audio/syn_ser_4000/flan-t5-xxl
+  syn_ser_2000: /scratch1/tiantiaf/robust-slu/audio/syn_ser_2000/flan-t5-xxl
+  syn_ser_1000: /scratch1/tiantiaf/robust-slu/audio/syn_ser_1000/flan-t5-xxl
+project_dir: /scratch1/tiantiaf/audio-gen-quality
