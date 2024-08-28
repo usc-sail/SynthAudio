@@ -17,35 +17,84 @@ from audiocraft.models import AudioGen
 from audiocraft.data.audio import audio_write
 
 
-activitynet_dict = {
+ucf101_dict = {
+    "ApplyEyeMakeup": "Applying Eye Makeup",
+    "ApplyLipstick": "Applying Lipstick",
+    "Archery":  "Archerying",
+    "BandMarching": "Band Marching",
+    "BabyCrawling": "Baby Crawling",
+    "BalanceBeam": "Playing Balance Beam",
+    "BasketballDunk": "Dunking Basketball",
+    "BlowDryHair": "Blowing Dry Hair",
+    "BlowingCandles": "Blowing Candles",
+    "BodyWeightSquats": "Body Weight Squats",
+    "Bowling": "Bowling",
+    "BoxingPunchingBag": "Boxing with Punching Bag",
+    "BoxingSpeedBag": "Boxing with Speed Bag",
+    "BrushingTeeth": "Brushing Teeth",
+    "CliffDiving": "Cliff Diving",
+    "CricketBowling": "Cricket Bowling",
+    "CricketShot": "Cricket Shot",
+    "CuttingInKitchen": "Cutting In Kitchen",
+    "FieldHockeyPenalty": "Field Hockey Penalty",
+    "FloorGymnastics": "Floor Gymnastics",
+    "FrisbeeCatch": "Catching Frisbee",
+    "FrontCrawl": "Performing Front Crawl",
+    "Haircut": "Haircut",
+    "HammerThrow": "Throwing Hammer",
+    "Hammering": "Hammering",
+    "HandstandPushups": "Handstand Pushups",
+    "HandstandWalking": "Handstand Walking",
+    "HeadMassage": "Massaging Head",
+    "IceDancing": "Ice Dancing",
+    "Knitting": "Knitting",
+    "LongJump": "Long Jump",
+    "MoppingFloor": "Mopping Floor",
+    "ParallelBars": "Parallel Bars",
+    "PlayingCello": "Playing Cello",
+    "PlayingDaf": "Playing Daf",
+    "PlayingDhol": "Playing Dhol",
+    "PlayingFlute": "Playing Flute",
+    "PlayingSitar": "Playing Sitar",
+    "Rafting": "Rafting",
+    "ShavingBeard": "Shaving Beard",
+    "Shotput": "Shot put",
+    "SkyDiving": "Sky Diving",
+    "SoccerPenalty": "Performing Soccer Penalty",
+    "StillRings": "Playing StillRings",
+    "SumoWrestling": "Sumo Wrestling",
+    "Surfing": "Surfing",
+    "TableTennisShot": "Table Tennis",
+    "Typing": "Typing",
+    "UnevenBars": "Uneven Bars",
+    "WallPushups": "Wall Pushups",
+    "WritingOnBoard": "Writing On Board",
+}
 
-    # Outdoor
-    "Horseback+riding": "Horseback+riding",
-    "Swimming": "Swimming",
-    "Tennis+serve+with+ball+bouncing": "doing Tennis+serve+with+ball+bouncing",
-    "Riding+bumper+cars": "Riding+bumper+cars",
-    "Skateboarding": "Skateboarding",
-
-    # Indoor
-    "Playing+badminton": "Playing+badminton",
-    "Playing+drums": "Playing+drums",
-    "Playing+guitarra": "Playing+guitarra",
-    "Playing+pool": "Playing+pool",
-    "Volleyball": "Playing Volleyball",
-
-    # Chores and Activity
-    "Chopping+wood": "Chopping wood",
-    "Hand+washing+clothes": "Hand+washing+clothes",
-    "Sharpening+knives": "Sharpening+knives",
-    "Vacuuming+floor": "Vacuuming+floor",
-    "Washing+dishes": "Washing+dishes",
-
-    # Personal Care and Grooming
-    "Blow-drying+hair": "Blow-drying hair",
-    "Brushing+teeth": "Brushing teeth",
-    "Getting+a+haircut": "Getting+a+haircut",
-    "Shaving": "Shaving",
-    "Gargling+mouthwash": "Gargling+mouthwash",
+ucf101_dict = {
+    # Sports
+    "BasketballDunk": "Dunking Basketball",
+    "Bowling": "Bowling",
+    "BoxingPunchingBag": "Boxing with Punching Bag",
+    "SoccerPenalty": "Performing Soccer Penalty",
+    "TableTennisShot": "Table Tennis",
+    # Music
+    "PlayingCello": "Playing Cello",
+    "PlayingDhol": "Playing Dhol",
+    "PlayingFlute": "Playing Flute",
+    "PlayingSitar": "Playing Sitar",
+    "BandMarching": "Band Marching",
+    # Life
+    "BlowDryHair": "Blowing Dry Hair",
+    "BlowingCandles": "Blowing Candles",
+    "BrushingTeeth": "Brushing Teeth",
+    "CuttingInKitchen": "Cutting In Kitchen",
+    "Haircut": "Haircut",
+    "Hammering": "Hammering",
+    "Knitting": "Knitting",
+    "ShavingBeard": "Shaving Beard",
+    "Typing": "Typing",
+    "WritingOnBoard": "Writing On Board",
 }
 
 # define logging console
@@ -66,7 +115,7 @@ def dataset_generate(
     gen_per_class,
     description=None
 ):  
-    duration = 5
+    duration = 5    
     if args.model == "audioldm":
         repo_id = "cvssp/audioldm2-large"
         model = AudioLDM2Pipeline.from_pretrained(
@@ -77,11 +126,12 @@ def dataset_generate(
     elif args.model == "audiogen":
         model = AudioGen.get_pretrained('facebook/audiogen-medium')
         model.set_generation_params(duration=duration)
-        
+        # model = model.to(device)
+    
     for label in labels:
-        class_name = activitynet_dict[label].lower().replace("+", " ")
+        class_name = ucf101_dict[label].lower()
         if description is not None:
-            description_list = description[label]
+            description_list = description[ucf101_dict[label].lower()]
         for j in tqdm(range(gen_per_class)):
             save_file_path = Path(args.gen_dir).joinpath(
                 f'{label}_{j}.wav'
@@ -90,6 +140,7 @@ def dataset_generate(
             is_skipping = False
             if Path(save_file_path).exists(): is_skipping = True
             if is_skipping: continue
+            
             
             if args.generate_method in ["class_prompt"]:
                 prompt = f"{class_name}"
@@ -117,7 +168,11 @@ def dataset_generate(
                 elif args.model == "audiogen":
                     audio = model.generate([prompt])[0]
                     audio = audio.detach().cpu().numpy()
+                    # pdb.set_trace()
+                    
             scipy.io.wavfile.write(save_file_path, rate=16000, data=audio[0])
+            # scipy.io.wavfile.write("tmp.wav", rate=16000, data=audio[0])
+            # pdb.set_trace()
             
             
 if __name__ == '__main__':
@@ -147,7 +202,7 @@ if __name__ == '__main__':
     
     parser.add_argument(
         '--dataset', 
-        default="activitynet",
+        default="ucf101",
         type=str, 
         help='dataset name'
     )
@@ -173,7 +228,7 @@ if __name__ == '__main__':
     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
     if torch.cuda.is_available(): print('GPU available, use GPU')
     
-    gen_labels = list(activitynet_dict.keys())
+    gen_labels = list(ucf101_dict.keys())
     gen_labels.sort()
     
     # pdb.set_trace()

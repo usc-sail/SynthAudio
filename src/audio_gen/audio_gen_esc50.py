@@ -3,50 +3,15 @@ import yaml
 import torch
 import scipy
 import random
-import torchaudio
-import numpy as np
 import argparse, logging
 import torch.multiprocessing
 import copy, time, pickle, shutil, sys, os, pdb
 
 from tqdm import tqdm
 from pathlib import Path
+from audiocraft.models import AudioGen
 from diffusers import AudioLDM2Pipeline
 
-from audiocraft.models import AudioGen
-from audiocraft.data.audio import audio_write
-
-
-activitynet_dict = {
-
-    # Outdoor
-    "Horseback+riding": "Horseback+riding",
-    "Swimming": "Swimming",
-    "Tennis+serve+with+ball+bouncing": "doing Tennis+serve+with+ball+bouncing",
-    "Riding+bumper+cars": "Riding+bumper+cars",
-    "Skateboarding": "Skateboarding",
-
-    # Indoor
-    "Playing+badminton": "Playing+badminton",
-    "Playing+drums": "Playing+drums",
-    "Playing+guitarra": "Playing+guitarra",
-    "Playing+pool": "Playing+pool",
-    "Volleyball": "Playing Volleyball",
-
-    # Chores and Activity
-    "Chopping+wood": "Chopping wood",
-    "Hand+washing+clothes": "Hand+washing+clothes",
-    "Sharpening+knives": "Sharpening+knives",
-    "Vacuuming+floor": "Vacuuming+floor",
-    "Washing+dishes": "Washing+dishes",
-
-    # Personal Care and Grooming
-    "Blow-drying+hair": "Blow-drying hair",
-    "Brushing+teeth": "Brushing teeth",
-    "Getting+a+haircut": "Getting+a+haircut",
-    "Shaving": "Shaving",
-    "Gargling+mouthwash": "Gargling+mouthwash",
-}
 
 # define logging console
 import logging
@@ -60,13 +25,11 @@ os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["NUMEXPR_NUM_THREADS"] = "1" 
 os.environ["OMP_NUM_THREADS"] = "1" 
 
-
 def dataset_generate(
     labels,
     gen_per_class,
     description=None
 ):  
-    duration = 5
     if args.model == "audioldm":
         repo_id = "cvssp/audioldm2-large"
         model = AudioLDM2Pipeline.from_pretrained(
@@ -76,28 +39,30 @@ def dataset_generate(
         model = model.to(device)
     elif args.model == "audiogen":
         model = AudioGen.get_pretrained('facebook/audiogen-medium')
-        model.set_generation_params(duration=duration)
+        model.set_generation_params(duration=5)
         
     for label in labels:
-        class_name = activitynet_dict[label].lower().replace("+", " ")
+        class_name = label.lower()
+        save_class_name = class_name.replace(" ", "_").replace(",", "")
         if description is not None:
             description_list = description[label]
         for j in tqdm(range(gen_per_class)):
             save_file_path = Path(args.gen_dir).joinpath(
-                f'{label}_{j}.wav'
+                f'{save_class_name}_{j}.wav'
             )
             
             is_skipping = False
             if Path(save_file_path).exists(): is_skipping = True
             if is_skipping: continue
             
+            
             if args.generate_method in ["class_prompt"]:
-                prompt = f"{class_name}"
+                prompt = f"{class_name} sound"
                 if args.model == "audioldm":
                     audio = model(
                         prompt,
                         num_inference_steps=50,
-                        audio_length_in_s=duration,
+                        audio_length_in_s=5.0,
                         num_waveforms_per_prompt=1,
                     ).audios
                 elif args.model == "audiogen":
@@ -106,17 +71,19 @@ def dataset_generate(
             elif args.generate_method in ["llm"]:
                 sampled_des = random.sample(description_list, 3)
                 des = ", ".join(sampled_des)
-                prompt = f"{class_name}, {des}"
+                prompt = f"{class_name} sound, {des}"
                 if args.model == "audioldm":
                     audio = model(
                         prompt,
                         num_inference_steps=50,
-                        audio_length_in_s=duration,
+                        audio_length_in_s=5.0,
                         num_waveforms_per_prompt=1,
                     ).audios
                 elif args.model == "audiogen":
                     audio = model.generate([prompt])[0]
                     audio = audio.detach().cpu().numpy()
+                    # pdb.set_trace()
+                    
             scipy.io.wavfile.write(save_file_path, rate=16000, data=audio[0])
             
             
@@ -126,14 +93,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Audio generation')
     parser.add_argument(
         '--gen_per_class', 
-        default=300,
+        default=30,
         type=int, 
         help='Number of generation per class'
     )
     
     parser.add_argument(
         '--generate_method', 
-        default="llm",
+        default="class_prompt",
         type=str, 
         help='generate method: class_prompt, multi_domain, ucg, llm'
     )
@@ -147,7 +114,7 @@ if __name__ == '__main__':
     
     parser.add_argument(
         '--dataset', 
-        default="activitynet",
+        default="esc50",
         type=str, 
         help='dataset name'
     )
@@ -173,10 +140,15 @@ if __name__ == '__main__':
     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
     if torch.cuda.is_available(): print('GPU available, use GPU')
     
-    gen_labels = list(activitynet_dict.keys())
+    gen_labels = [
+        "helicopter", "Chainsaw", "Siren", "Car horn", "Engine", "Train", "Church bells", "Airplane", "Fireworks", "Hand saw",
+        "dog", "Rooster", "Pig", "Cow", "Frog", "Cat", "Hen", "Insects", "Sheep", "Crow",
+        "Rain", "Sea waves", "Crackling fire", "Crickets", "Chirping birds", "Water drops", "Wind", "Pouring water", "Toilet flush", "Thunderstorm",
+        "Crying baby", "Sneezing", "Clapping", "Breathing", "Coughing", "Footsteps", "Laughing", "Brushing teeth", "Snoring", "Drinking sipping",
+        "Door wood knock", "Mouse click", "Keyboard typing", "Door, wood creaks", "Can opening", "Washing machine", "Vacuum cleaner", "Clock alarm", "Clock tick", "Glass breaking"
+    ]
     gen_labels.sort()
     
-    # pdb.set_trace()
     dataset_generate(
         gen_labels,
         args.gen_per_class,
