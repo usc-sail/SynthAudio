@@ -35,38 +35,6 @@ ucf101_dict = {
     "WritingOnBoard": "Writing On Board",
 }
 
-
-activitynet_dict = {
-
-    # Outdoor
-    "Horseback+riding": "Horseback+riding",
-    "Swimming": "Swimming",
-    "Tennis+serve+with+ball+bouncing": "doing Tennis+serve+with+ball+bouncing",
-    "Riding+bumper+cars": "Riding+bumper+cars",
-    "Skateboarding": "Skateboarding",
-
-    # Indoor
-    "Playing+badminton": "Playing+badminton",
-    "Playing+drums": "Playing+drums",
-    "Playing+guitarra": "Playing+guitarra",
-    "Playing+pool": "Playing+pool",
-    "Volleyball": "Playing Volleyball",
-
-    # Chores and Activity
-    "Chopping+wood": "Chopping wood",
-    "Hand+washing+clothes": "Hand+washing+clothes",
-    "Sharpening+knives": "Sharpening+knives",
-    "Vacuuming+floor": "Vacuuming+floor",
-    "Washing+dishes": "Washing+dishes",
-
-    # Personal Care and Grooming
-    "Blow-drying+hair": "Blow-drying hair",
-    "Brushing+teeth": "Brushing teeth",
-    "Getting+a+haircut": "Getting+a+haircut",
-    "Shaving": "Shaving",
-    "Gargling+mouthwash": "Gargling+mouthwash",
-}
-
 esc_top_list = [
     "clapping", "brushing_teeth", "pig", "crackling_fire", "pouring_water", 
     "siren", "clock_tick", "fireworks", "can_opening", "sneezing",
@@ -537,10 +505,7 @@ def return_weights(
         with open(str(Path(input_path).joinpath(f'speechcommands.json')), "r") as f: split_dict = json.load(f)
     
     weights_stats = dict()
-    if dataset in ["activitynet"]:
-        for i in range(len(activitynet_dict)):
-            weights_stats[i] = 1
-            
+    
     if input_data is None: data_dict = split_dict['train']
     else: data_dict = input_data
     for data in data_dict:
