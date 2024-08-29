@@ -107,55 +107,6 @@ def parse_finetune_args():
     )
 
     parser.add_argument(
-        '--uar_dir', 
-        default='/media/data/projects/speech-privacy/trust-ser/uar',
-        type=str, 
-        help='model uar history'
-    )
-
-    parser.add_argument(
-        '--attack_dir', 
-        default='/media/data/projects/speech-privacy/trust-ser/attack',
-        type=str, 
-        help='attack data'
-    )
-    
-    parser.add_argument(
-        '--privacy_attack_dir', 
-        default='/media/data/projects/speech-privacy/trust-ser/privacy',
-        type=str, 
-        help='privacy attack method data'
-    )
-    
-    parser.add_argument(
-        '--privacy_attack', 
-        default='gender',
-        type=str, 
-        help='Privacy attack method'
-    )
-
-    parser.add_argument(
-        '--fairness_dir', 
-        default='/media/data/projects/speech-privacy/trust-ser/fairness',
-        type=str, 
-        help='model save path'
-    )
-
-    parser.add_argument(
-        '--sustainability_dir', 
-        default='/media/data/projects/speech-privacy/trust-ser/sustainability',
-        type=str, 
-        help='model save path'
-    )
-    
-    parser.add_argument(
-        '--attack_method', 
-        default='pgd',
-        type=str, 
-        help='attack method'
-    )
-
-    parser.add_argument(
         '--pretrain_model', 
         default='wav2vec2_0',
         type=str,
@@ -257,37 +208,9 @@ def parse_finetune_args():
         '--finetune_method', 
         default='finetune',
         type=str, 
-        help='finetune method: adapter, embedding prompt, input prompt'
+        help='finetune methods'
     )
     
-    parser.add_argument(
-        '--adapter_hidden_dim', 
-        default=128,
-        type=int, 
-        help='adapter dimension'
-    )
-    
-    parser.add_argument(
-        '--finetune_emb', 
-        default="all",
-        type=str, 
-        help='adapter dimension'
-    )
-    
-    parser.add_argument(
-        '--embedding_prompt_dim', 
-        default=5,
-        type=int, 
-        help='adapter dimension'
-    )
-    
-    parser.add_argument(
-        '--lora_rank', 
-        default=16,
-        type=int, 
-        help='lora rank'
-    )
-
     parser.add_argument(
         '--use-conv-output', 
         action='store_true',
@@ -361,20 +284,8 @@ def parse_finetune_args():
     )
     
     args = parser.parse_args()
-    if args.finetune_method == "adapter" or args.finetune_method == "adapter_l":
-        setting = f'lr{str(args.learning_rate).replace(".", "")}_ep{args.num_epochs}_{args.finetune_method}_{args.adapter_hidden_dim}'
-    elif args.finetune_method == "embedding_prompt":
-        setting = f'lr{str(args.learning_rate).replace(".", "")}_ep{args.num_epochs}_{args.finetune_method}_{args.embedding_prompt_dim}'
-    elif args.finetune_method == "lora":
-        setting = f'lr{str(args.learning_rate).replace(".", "")}_ep{args.num_epochs}_{args.finetune_method}_{args.lora_rank}'
-    elif args.finetune_method == "finetune":
+    if args.finetune_method == "finetune":
         setting = f'lr{str(args.learning_rate).replace(".", "")}_ep{args.num_epochs}_{args.finetune_method}'
-    elif args.finetune_method == "combined":
-        setting = f'lr{str(args.learning_rate).replace(".", "")}_ep{args.num_epochs}_{args.finetune_method}_{args.adapter_hidden_dim}_{args.embedding_prompt_dim}_{args.lora_rank}'
     args.setting = setting
-    if args.finetune_emb != "all":
-        args.setting = args.setting + "_avgtok"
-    if args.use_conv_output:
-        args.setting = args.setting + "_conv_output"
     
     return args
