@@ -30,3 +30,8 @@ For using LLM, as this research was performed when Gemini was first launched, we
 For now, we only release the audios from ESC50, due to the large size of synthetic audios.
 
 
+### Audio Training
+We provided sample experiment code for audio training. You will need to run split, preprocess, and finally finetune scripts under experiments. You would need to download the SSAST-Base-Patch-400.pth from the SSAST repo.
+
+
+
