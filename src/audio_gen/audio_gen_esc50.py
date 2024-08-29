@@ -123,7 +123,7 @@ if __name__ == '__main__':
     with open("../../config/config.yml", "r") as stream: config = yaml.safe_load(stream)
     args.root_dir = str(Path(config["project_dir"]).joinpath(args.dataset))
     args.gen_dir  = str(Path(config["project_dir"]).joinpath("generation", args.dataset, "audio", args.model, args.generate_method))
-    args.des_dir  = str(Path(config["project_dir"]).joinpath("description", args.dataset, "data.json"))
+    args.des_dir  = os.path.join("description", args.dataset, "data.json")
     
     des_dict = None
     if args.generate_method == "llm":
