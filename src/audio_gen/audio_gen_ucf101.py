@@ -14,62 +14,6 @@ from pathlib import Path
 from diffusers import AudioLDM2Pipeline
 
 from audiocraft.models import AudioGen
-from audiocraft.data.audio import audio_write
-
-
-ucf101_dict = {
-    "ApplyEyeMakeup": "Applying Eye Makeup",
-    "ApplyLipstick": "Applying Lipstick",
-    "Archery":  "Archerying",
-    "BandMarching": "Band Marching",
-    "BabyCrawling": "Baby Crawling",
-    "BalanceBeam": "Playing Balance Beam",
-    "BasketballDunk": "Dunking Basketball",
-    "BlowDryHair": "Blowing Dry Hair",
-    "BlowingCandles": "Blowing Candles",
-    "BodyWeightSquats": "Body Weight Squats",
-    "Bowling": "Bowling",
-    "BoxingPunchingBag": "Boxing with Punching Bag",
-    "BoxingSpeedBag": "Boxing with Speed Bag",
-    "BrushingTeeth": "Brushing Teeth",
-    "CliffDiving": "Cliff Diving",
-    "CricketBowling": "Cricket Bowling",
-    "CricketShot": "Cricket Shot",
-    "CuttingInKitchen": "Cutting In Kitchen",
-    "FieldHockeyPenalty": "Field Hockey Penalty",
-    "FloorGymnastics": "Floor Gymnastics",
-    "FrisbeeCatch": "Catching Frisbee",
-    "FrontCrawl": "Performing Front Crawl",
-    "Haircut": "Haircut",
-    "HammerThrow": "Throwing Hammer",
-    "Hammering": "Hammering",
-    "HandstandPushups": "Handstand Pushups",
-    "HandstandWalking": "Handstand Walking",
-    "HeadMassage": "Massaging Head",
-    "IceDancing": "Ice Dancing",
-    "Knitting": "Knitting",
-    "LongJump": "Long Jump",
-    "MoppingFloor": "Mopping Floor",
-    "ParallelBars": "Parallel Bars",
-    "PlayingCello": "Playing Cello",
-    "PlayingDaf": "Playing Daf",
-    "PlayingDhol": "Playing Dhol",
-    "PlayingFlute": "Playing Flute",
-    "PlayingSitar": "Playing Sitar",
-    "Rafting": "Rafting",
-    "ShavingBeard": "Shaving Beard",
-    "Shotput": "Shot put",
-    "SkyDiving": "Sky Diving",
-    "SoccerPenalty": "Performing Soccer Penalty",
-    "StillRings": "Playing StillRings",
-    "SumoWrestling": "Sumo Wrestling",
-    "Surfing": "Surfing",
-    "TableTennisShot": "Table Tennis",
-    "Typing": "Typing",
-    "UnevenBars": "Uneven Bars",
-    "WallPushups": "Wall Pushups",
-    "WritingOnBoard": "Writing On Board",
-}
 
 ucf101_dict = {
     # Sports
@@ -141,7 +85,6 @@ def dataset_generate(
             if Path(save_file_path).exists(): is_skipping = True
             if is_skipping: continue
             
-            
             if args.generate_method in ["class_prompt"]:
                 prompt = f"{class_name}"
                 if args.model == "audioldm":
@@ -168,11 +111,8 @@ def dataset_generate(
                 elif args.model == "audiogen":
                     audio = model.generate([prompt])[0]
                     audio = audio.detach().cpu().numpy()
-                    # pdb.set_trace()
                     
             scipy.io.wavfile.write(save_file_path, rate=16000, data=audio[0])
-            # scipy.io.wavfile.write("tmp.wav", rate=16000, data=audio[0])
-            # pdb.set_trace()
             
             
 if __name__ == '__main__':
